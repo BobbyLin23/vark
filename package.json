@@ -38,6 +38,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
     "@iconify-json/ri": "^1.2.6",
+    "@nuxtjs/color-mode": "^4.0.0",
     "@tailwindcss/vite": "^4.1.17",
     "drizzle-kit": "^0.31.7",
     "eslint": "^9.38.0",

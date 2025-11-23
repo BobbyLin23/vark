@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxt/image',
     'shadcn-nuxt',
+    '@nuxtjs/color-mode',
   ],
   css: ['~/assets/css/tailwind.css'],
   vite: {
@@ -18,5 +19,8 @@ export default defineNuxtConfig({
   shadcn: {
     prefix: '',
     componentDir: '@/components/ui',
+  },
+  colorMode: {
+    classSuffix: '',
   },
 })
