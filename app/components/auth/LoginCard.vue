@@ -2,7 +2,9 @@
 import type { HTMLAttributes } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
+import { toast } from 'vue-sonner'
 import { z } from 'zod'
+import { authClient } from '~/lib/auth-client'
 import { cn } from '~/lib/utils'
 
 const props = defineProps<{
@@ -13,17 +15,40 @@ const emits = defineEmits<{
   (e: 'toggleState', value: 'login' | 'register'): void
 }>()
 
+const isLoading = ref(false)
+
 const formSchema = toTypedSchema(z.object({
-  email: z.email(),
-  password: z.string().min(8),
+  email: z.email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 }))
 
 const form = useForm({
   validationSchema: formSchema,
 })
 
-const onSubmit = form.handleSubmit((values) => {
-  console.log(values)
+const onSubmit = form.handleSubmit(async (values) => {
+  isLoading.value = true
+
+  try {
+    await authClient.signIn.email({
+      email: values.email,
+      password: values.password,
+      callbackURL: '/dashboard',
+    }, {
+      onSuccess: () => {
+        navigateTo('/dashboard')
+      },
+      onError: (ctx) => {
+        toast.error(ctx.error.message)
+      },
+    })
+  }
+  catch (err) {
+    console.error(err)
+  }
+  finally {
+    isLoading.value = false
+  }
 })
 </script>
 
@@ -42,7 +67,7 @@ const onSubmit = form.handleSubmit((values) => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="m@example.com" v-bind="componentField" />
+                <Input type="email" placeholder="m@example.com" v-bind="componentField" :disabled="isLoading" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -51,26 +76,28 @@ const onSubmit = form.handleSubmit((values) => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="********" v-bind="componentField" />
+                <Input type="password" placeholder="********" v-bind="componentField" :disabled="isLoading" />
               </FormControl>
               <FormMessage />
             </FormItem>
           </FormField>
-          <Button type="submit" class="w-full">
-            Login
+          <Button type="submit" class="w-full" :disabled="isLoading">
+            <Spinner v-if="isLoading" />
+            <span v-if="isLoading">Signing in...</span>
+            <span v-else>Login</span>
           </Button>
           <div class="text-center text-sm text-muted-foreground">
             Don't have an account?
-            <Button variant="link" class="p-0 cursor-pointer" @click="emits('toggleState', 'register')">
+            <Button variant="link" class="p-0 cursor-pointer" :disabled="isLoading" @click="emits('toggleState', 'register')">
               Sign up
             </Button>
           </div>
           <Separator />
-          <Button variant="outline" class="w-full">
+          <Button variant="outline" class="w-full" :disabled="isLoading">
             <Icon name="ri:google-fill" class="size-4" />
             Continue with Google
           </Button>
-          <Button variant="outline" class="w-full">
+          <Button variant="outline" class="w-full" :disabled="isLoading">
             <Icon name="ri:github-fill" class="size-4" />
             Continue with GitHub
           </Button>

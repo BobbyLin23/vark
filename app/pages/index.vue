@@ -4,6 +4,8 @@
 
 <template>
   <div>
-    <Button>Click me</Button>
+    <Button @click="navigateTo('/dashboard')">
+      Click me
+    </Button>
   </div>
 </template>
